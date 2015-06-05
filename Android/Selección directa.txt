@@ -1,0 +1,15 @@
+/* Selección directa*/
+void ordenaSel (int v[], int num) {
+	int i, j, menor, aux;
+	for (i=0; i<num; i++){
+		menor = i;
+		for (j=i+1; j<num; j++)
+			if (v[j] < v[menor])
+				menor = j;
+		if (i != menor){
+		aux = v[i];
+		v[i] = v[menor];
+		v[menor] = aux;
+		}
+	}
+}

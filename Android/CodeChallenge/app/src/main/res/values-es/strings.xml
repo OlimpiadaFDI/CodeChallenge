@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="register">Registrarse</string>
+    <string name="login">Conectarse</string>
+    <string name="login_text">Conectarse or registrarse</string>
+    <string name="action_settings">Preferencias</string>
+    <string name="Version">Versión %1$s</string>
+    <string name="CheckBox_Remember">Recordar los detalles de mi cuenta</string>
+    <string name="connected">Recuperando las preguntas de nuestros servidores</string>
+    <string name="not_connected">No estamos conectados a Internet</string>
+    <string name="countDown">%1$s segundos</string>
+    <string name="exit">Salir</string>
+    <string name="newGame">Nuevo Juego</string>
+    <string name="score">Puntuación</string>
+    <string name="goodbye">¡Hasta pronto!</string>
+    <string name="timesUp">¡Se acabó el tiempo!</string>
+    <string name="backToMenu">Volver al Menú</string>
+    <string name="badges">Estas son las insignias que has desbloqueado:</string>
+    <string name="lastGameData">Has resuelto el reto correctamente en %1$s segundos</string>
+    <string name="lastGameInfo">Los datos de tu último juego:</string>
+    <string name="gameExposition">Encuentra los %1$s error%2$s restantes</string>
+    <string name="check">Comprobar</string>
+</resources>

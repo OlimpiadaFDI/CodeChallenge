@@ -1,0 +1,18 @@
+/* Burbuja */
+void ordenaBur (int v[], int num) {
+	int i, j, aux;
+	bool modificado;
+	i = 0;
+	modificado = true;
+	while ((i < num - 1) && modificado) {
+		modificado = false;
+		for (j = num-1; j > i; j--)
+			if (v[j] < v[j-1]){
+				aux = v[j];
+				v[j] = v[j-1];
+				v[j-1] = aux;
+				modificado = true;
+			}
+		i++
+	}
+}
