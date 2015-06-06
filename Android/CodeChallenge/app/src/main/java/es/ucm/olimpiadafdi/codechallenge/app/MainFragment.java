@@ -6,16 +6,15 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,7 +23,6 @@ import java.util.Random;
 
 import es.ucm.olimpiadafdi.codechallenge.R;
 import es.ucm.olimpiadafdi.codechallenge.connection.JsonRequest;
-import es.ucm.olimpiadafdi.codechallenge.data.CalculaInsignias;
 import es.ucm.olimpiadafdi.codechallenge.data.Code;
 import es.ucm.olimpiadafdi.codechallenge.data.CodeInit;
 import es.ucm.olimpiadafdi.codechallenge.data.CodeLine;
@@ -42,7 +40,7 @@ import es.ucm.olimpiadafdi.codechallenge.data.Storage;
  */
 public class MainFragment extends Fragment {
 
-    private CalculaInsignias calculaInsignias;
+    private static String UNLOCKBADGE = "unlockBadge";
 
     private Activity activity;
     private TextView textView_countDown;
@@ -52,6 +50,9 @@ public class MainFragment extends Fragment {
     private CountDownTimer countDown;
     private static long timestamp;
     private ArrayAdapter<CodeLine> adapter;
+    private int incorrectLinesFound;
+    private Code code;
+    String text;
 
     public MainFragment(){}
 
@@ -72,19 +73,32 @@ public class MainFragment extends Fragment {
         this.lv = (ListView) rootView.findViewById(R.id.listView_code);
 
         Context context = activity.getApplicationContext();
-        String countDownString = activity.getString(R.string.countDown, "300");
+        String countDownString = activity.getString(R.string.countDown, "60");
         textView_countDown.setText(countDownString);
 
-        countDown = new CountDownTimer(300000, 1) {
-            public void onTick(long millisUntilFinished) {}
-            public void onFinish() {}
-        }.start();
+        countDown = new CountDownTimer(60000, 1) {
+            public void onTick(long millisUntilFinished) {
+                timestamp = 60000 - millisUntilFinished;
+                Context context = activity.getApplicationContext();
+                String countdown = activity.getString(R.string.countDown, Long.toString(millisUntilFinished / 1000));
+                textView_countDown.setText(countdown);
+            }
+            public void onFinish() {
+                Context context = activity.getApplicationContext();
+                String text = activity.getString(R.string.timesUp);
+                int duration = Toast.LENGTH_SHORT;
 
-        //calculaInsignias = new CalculaInsignias(activity.getApplicationContext());
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+
+                finishGame();
+            }
+        };
 
         Random r = new Random();
         int i1 = r.nextInt(2); //i1 vale 0 ó 1. Más info: http://stackoverflow.com/questions/6029495/how-can-i-generate-random-number-in-specific-range-in-android
-        final Code code = CodeInit.initCode(i1);
+        code = CodeInit.initCode(i1);
+        incorrectLinesFound = 0;
             String text = activity.getString(R.string.gameExposition, code.getTotalErrors(),code.getTotalErrors()==0? "" : "s" );
             textView_lineCounter.setText(text);
         adapter = new ArrayAdapter<CodeLine>(activity.getApplicationContext(), android.R.layout.simple_list_item_2, android.R.id.text1, code.getCode()){
@@ -167,48 +181,101 @@ public class MainFragment extends Fragment {
     }
 
     public void checkResult(){
-        Context context = activity.getApplicationContext();
-/*
-        //Calculamos las insignias:
-        calculaInsignias.nuevaPregunta(q, answer,timestamp);
-
-        String text;
-        if (answer == q.getCorrect()){
-            text = context.getString(R.string.correct_answer);
-        }
-        else{
-            text = context.getString(R.string.incorrect_answer);
-        }
-        int duration = Toast.LENGTH_SHORT;
-
-        Toast toast = Toast.makeText(context, text, duration);
-        toast.show();
-
-        if (Storage.getInstance().getQuestionsAlreadyAsked().size()<10){
-            JsonRequest jsonRequest = new JsonRequest(GETQUESTION, context, updateDataSuccess, updateDataError, null);
-            jsonRequest.request();
-        }
-        else{
-            try{
-                SharedPrefInfo info = new SharedPrefInfo();
-                SharedPreferences pref = activity.getApplicationContext().getSharedPreferences(info.PREF_NAME, info.PRIVATE_MODE);
-                SharedPreferences.Editor editor = pref.edit();
-                    editor.putString(info.KEY_TOTALTIME, Long.toString(calculaInsignias.getTiempoTotal()));
-                editor.commit();
-
-                ((mainInterface) activity).showScores();
-            }catch (ClassCastException e){
-                e.printStackTrace();
+        boolean[] blist = new boolean[code.getCode().size()];
+        if (code.getTotalErrors() == Storage.getInstance().getCountLines()){
+            for (int i =0; i<code.getCode().size(); i++){
+               CodeLine l = code.getCode().get(i);
+                if ((l.isSelected() && l.getIsError()) || (!l.isSelected() && !l.getIsError())){
+                    blist[i] = true;
+                } else{
+                    blist[i] = false;
+                }
             }
-        }*/
+            if (areAllTrue(blist)) {
+
+                if (timestamp <= 10000){
+                    triggerInsignia_84();
+                }
+                if (Storage.getInstance().getFallos() == 0)
+                    triggerInsignia_82();
+
+                finishGame();
+            }
+            else{
+                Context context = activity.getApplicationContext();
+                String text = "Has seleccionado líneas que no tienen erores!";
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+            }
+        }
+        else{
+            Context context = activity.getApplicationContext();
+            String text = "No has encontrado todos los errores";
+            int duration = Toast.LENGTH_SHORT;
+
+            Toast toast = Toast.makeText(context, text, duration);
+            toast.show();
+        }
     }
+
+        public void triggerInsignia_82(){
+        String s[] = {Storage.getInstance().getNick(), Integer.toString(82)};
+        JsonRequest jsonRequest = new JsonRequest(UNLOCKBADGE, activity.getApplicationContext(), updateDataSuccess, updateDataError, s);
+        jsonRequest.request();
+
+        text = "¡Desbloqueada la Insignia 'HAWKEYE'!";
+    }
+    public void triggerInsignia_84(){
+        String s[] = {Storage.getInstance().getNick(), Integer.toString(84)};
+        JsonRequest jsonRequest = new JsonRequest(UNLOCKBADGE, activity.getApplicationContext(), updateDataSuccess, updateDataError, s);
+        jsonRequest.request();
+
+        text = "¡Desbloqueada la Insignia 'QUICK REACTION FORCE'!";
+    }
+
+    public static boolean areAllTrue(boolean[] array)
+    {
+        for(boolean b : array) if(!b) return false;
+        return true;
+    }
+
+    public void finishGame(){
+        countDown.cancel();
+        countDown = null;
+        SharedPrefInfo info = new SharedPrefInfo();
+        SharedPreferences pref = activity.getApplicationContext().getSharedPreferences(info.PREF_NAME, info.PRIVATE_MODE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString(info.KEY_CORRECT, (code.getTotalErrors() == Storage.getInstance().getCountLines())? "correctamente" : "incorrectamente");
+        editor.putString(info.KEY_TOTALTIME, Long.toString(timestamp/1000));
+        editor.commit();
+        try{
+            ((mainInterface) activity).showScores();
+        }catch (ClassCastException e){
+            e.printStackTrace();
+        }
+    }
+
+    private Runnable updateDataSuccess = new Runnable() {
+        public void run() {
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(activity.getApplicationContext(), text, duration);
+            toast.show();
+
+            Log.d("CodeChallenge", "Badge unlocked" + text);
+        }
+    };
+
+    private Runnable updateDataError = new Runnable() {
+        public void run() {
+            Log.d("CodeChallenge", "Error unlocking Badge");
+        }
+    };
 
     public void startGame(){
         // Checking Internet connection
-        countDown = new CountDownTimer(300000, 1) {
-            public void onTick(long millisUntilFinished) {}
-            public void onFinish() {}
-        }.start();
+
 
         ConnectivityManager connMgr = (ConnectivityManager) activity.getSystemService(activity.getApplicationContext().CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -229,83 +296,6 @@ public class MainFragment extends Fragment {
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
 
-        //Retrieving the next question
-
-        //JsonRequest jsonRequest = new JsonRequest(GETQUESTION, context, updateDataSuccess, updateDataError, null);
-        //jsonRequest.request();
+        countDown.start();
     }
-
-    private Runnable updateDataSuccess = new Runnable() {
-        public void run() {
-            Log.d("QuickTest", "success");
-            /*Question q = Storage.getInstance().getQuestion();
-            Storage.getInstance().getQuestionsAlreadyAsked().add(q.getId());
-
-            int num = Storage.getInstance().getQuestionsAlreadyAsked().size();
-            String questionCount = activity.getString(R.string.questionsCount, num, 10);
-            textView_questionCount.setText(questionCount);
-
-            //Visualizar la pregunta
-            if (q != null){
-                textView_question.setText(q.getQuestion());
-
-                Answer a1 = q.getAnswers().get(0);
-                button1.setText(a1.getAnswer());
-                if (a1.getId() == q.getCorrect())
-                    q.setCorrect(1);
-
-                Answer a2 = q.getAnswers().get(1);
-                button2.setText(a2.getAnswer());
-                if (a2.getId() == q.getCorrect())
-                    q.setCorrect(2);
-
-                Answer a3 = q.getAnswers().get(2);
-                button3.setText(a3.getAnswer());
-                if (a3.getId() == q.getCorrect())
-                    q.setCorrect(3);
-
-                Answer a4 = q.getAnswers().get(3);
-                button4.setText(a4.getAnswer());
-                if (a4.getId() == q.getCorrect())
-                    q.setCorrect(4);
-
-                Storage.getInstance().setQuestion(q);*/
-
-                countDown.cancel();
-                countDown = new CountDownTimer(30000, 1) {
-                    public void onTick(long millisUntilFinished) {
-                        timestamp = 30000 - millisUntilFinished;
-                        Context context = activity.getApplicationContext();
-                        String countdown = activity.getString(R.string.countDown, Long.toString(millisUntilFinished / 1000));
-                        textView_countDown.setText(countdown);
-                    }
-                    public void onFinish() {
-                        Context context = activity.getApplicationContext();
-                        String text = activity.getString(R.string.timesUp);
-                        int duration = Toast.LENGTH_SHORT;
-
-                        Toast toast = Toast.makeText(context, text, duration);
-                        toast.show();
-
-                        try{
-                            ((mainInterface) activity).showScores();
-                        }catch (ClassCastException e){
-                            e.printStackTrace();
-                        }
-                    }
-                }.start();
-
-                //AlertDialogManager d = new AlertDialogManager();
-                //d.showAlertDialog(getApplicationContext(), "Correcto", "Muy bien",true);
-            /*}
-            else{
-                Log.e("QuickTest", "Question is null");
-            }*/
-        }
-    };
-    private Runnable updateDataError = new Runnable() {
-        public void run() {
-            Log.d("QuickTest", "updateDataError");
-        }
-    };
 }

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import es.ucm.olimpiadafdi.codechallenge.data.Storage;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -25,10 +23,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class JsonRequest {
+import es.ucm.olimpiadafdi.codechallenge.data.Storage;
 
-    private static String GETQUESTION = "getQuestion";
-    private static String url_getQuestion = "http://ssii2014.e-ucm.es:80/OlimpiadaFDIServices/rest/quickTest/preguntaAleatoria";
+public class JsonRequest {
 
     private static String LOGIN = "login";
     private static String url_login = "http://ssii2014.e-ucm.es:80//OlimpiadaFDIServices/rest/insignias/logginUsuario";
@@ -48,10 +45,8 @@ public class JsonRequest {
     public JsonRequest(String purpose, Context context, Runnable updateDataSuccess,
                        Runnable updateDataError, String[] data) {
 
-        if (purpose.equalsIgnoreCase(GETQUESTION))
-            this.uri = url_getQuestion;
 
-        else if (purpose.equalsIgnoreCase(LOGIN))
+        if (purpose.equalsIgnoreCase(LOGIN))
             this.uri = url_login;
 
         else if (purpose.equalsIgnoreCase(UNLOCKBADGE))
@@ -94,18 +89,6 @@ public class JsonRequest {
                 Log.i("QuickTest", "Parsing - " + LOGIN);
                 result = HtmlParser.checkLogin(response);
             }
-/*
-            // Get Question
-            else if (purpose.equalsIgnoreCase(GETQUESTION)) {
-                Log.i("QuickTest", "Do in background - " + GETQUESTION);
-                String response = GET(uri);
-                if (response == null) {
-                    result = false;
-                }
-                Log.i("QuickTest", "Parsing - " + GETQUESTION);
-                Question q = HtmlParser.parseQuestion(response);
-                Storage.getInstance().setQuestion(q);
-            }*/
 
             if (purpose.equalsIgnoreCase(UNLOCKBADGE)){
                 Log.i("QuickTest", "Do in background - " + UNLOCKBADGE);
@@ -115,7 +98,7 @@ public class JsonRequest {
                     result = false;
                 }
                 Log.i("QuickTest", "Parsing - " + UNLOCKBADGE);
-                //result = HtmlParser.checkLogin(response);
+                result = HtmlParser.checkBadge(response);
             }
 
             if (purpose.equalsIgnoreCase(SHOWBADGES)){
@@ -226,11 +209,6 @@ public class JsonRequest {
         try {
             object.put("nombre", data[0]);
             object.put("pass", data[1]);
-
-            /*object.put("nombre", "Jack Hack");
-            object.put("score", new Integer(200));
-            object.put("current", new Double(152.32));
-            object.put("nickname", "Hacker");*/
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -242,11 +220,6 @@ public class JsonRequest {
         try {
             object.put("nombreUsuario", data[0]);
             object.put("idInsignia", data[1]);
-
-            /*object.put("nombre", "Jack Hack");
-            object.put("score", new Integer(200));
-            object.put("current", new Double(152.32));
-            object.put("nickname", "Hacker");*/
         } catch (JSONException e) {
             e.printStackTrace();
         }

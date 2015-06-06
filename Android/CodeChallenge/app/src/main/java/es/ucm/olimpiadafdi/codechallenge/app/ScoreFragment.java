@@ -15,13 +15,13 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 import es.ucm.olimpiadafdi.codechallenge.R;
 import es.ucm.olimpiadafdi.codechallenge.connection.JsonRequest;
 import es.ucm.olimpiadafdi.codechallenge.data.Badge;
 import es.ucm.olimpiadafdi.codechallenge.data.SharedPrefInfo;
 import es.ucm.olimpiadafdi.codechallenge.data.Storage;
-
-import java.util.ArrayList;
 
 public class ScoreFragment extends Fragment {
 
@@ -88,12 +88,13 @@ public class ScoreFragment extends Fragment {
 
         SharedPrefInfo info = new SharedPrefInfo();
         SharedPreferences pref = activity.getApplicationContext().getSharedPreferences(info.PREF_NAME, info.PRIVATE_MODE);
-        if (pref.contains(info.KEY_TOTALTIME)){
+        if (pref.contains(info.KEY_TOTALTIME) && pref.contains(info.KEY_CORRECT) ){
             String time = pref.getString(info.KEY_TOTALTIME, null);
+            String correctness = pref.getString(info.KEY_CORRECT, null);
 
             // Escribimos el textView que muestra la versión de la app
             Context context = activity.getApplicationContext();
-            String text = activity.getString(R.string.lastGameData, time);
+            String text = activity.getString(R.string.lastGameData,correctness, time);
             textView_lastGameData.setText(text);
         }
         adapter.notifyDataSetChanged();

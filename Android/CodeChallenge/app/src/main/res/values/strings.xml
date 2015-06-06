@@ -18,7 +18,7 @@
     <string name="timesUp">Time\'s Up!</string>
     <string name="lastGameInfo">Your last game details:</string>
     <string name="badges">These are the badges you have unlocked:</string>
-    <string name="lastGameData">You successfully solved the challenge in %1$s seconds</string>
+    <string name="lastGameData">You %1$s solved the challenge in %2$s seconds</string>
     <string name="backToMenu">Back to Main Menu</string>
     <string name="gameExposition">Find the remaining %1$s error%2$s</string>
     <string name="check">Check</string>

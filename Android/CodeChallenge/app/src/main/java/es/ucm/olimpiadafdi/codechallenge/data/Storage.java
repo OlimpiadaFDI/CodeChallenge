@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Storage {
 
-    private static final String VERSION = "0.1";
+    private static final String VERSION = "1.2";
 
     private static Storage ourInstance = new Storage();
 
@@ -19,7 +19,9 @@ public class Storage {
 
     private String registerURL = "http://www.google.es";
     private String nick;
-    public int countLines = 0;
+    private int countLines = 0;
+    private int countLinesCorrect = 0;
+    private int numFallos = 0;
     private String resultErrorLogin;
     private ArrayList<Badge> listBadges = new ArrayList<Badge>();
 
@@ -56,6 +58,23 @@ public class Storage {
     }
     public int getCountLines(){
         return countLines;
+    }
+
+    public void selectLineCorrect(){
+        countLinesCorrect++;
+    }
+    public void deselectLineCorrect(){
+        countLinesCorrect--;
+    }
+    public int getCountLinesCorrect(){
+        return countLinesCorrect;
+    }
+
+    public void unFallo(){
+        numFallos++;
+    }
+    public int getFallos(){
+        return numFallos;
     }
 
     public ArrayList<Badge> getListBadges() {
